@@ -39,7 +39,7 @@ public class DaoImpl {
 	
 	
 	
-	/*public Triangle getTriangle(int triangleid){
+	public Triangle getTriangle(int triangleid){
 		
 		System.out.println("Before Con");
 		
