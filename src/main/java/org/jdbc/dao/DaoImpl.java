@@ -14,6 +14,9 @@ import org.jdbc.model.Triangle;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.stereotype.Component;
 
 
@@ -28,11 +31,15 @@ public class DaoImpl {
 	
 	private JdbcTemplate jdbctemplate = new JdbcTemplate();
 	
+	private NamedParameterJdbcTemplate namedParameterjdbctTemplate;
+	
+	
+	
 
 	
 	
 	
-	public Triangle getTriangle(int triangleid){
+	/*public Triangle getTriangle(int triangleid){
 		
 		System.out.println("Before Con");
 		
@@ -85,7 +92,7 @@ public class DaoImpl {
 		}catch(SQLException e){
 			
 		}
-	}}
+	}}*/
 	
 	public int getTriangleCount(){
 		
@@ -119,11 +126,38 @@ public class DaoImpl {
 		return  jdbctemplate.query(allRecords, new triangleMapper());
 		
 	}
+	 
+	//insert Triangle object into database (example for your login example)
+	//jdbctemplate accepts onlu ? as parameter
+	public void insertingRecords(Triangle tri){
+		String insertSql = "insert into triangle(name,id) values (?, ?)";
+		jdbctemplate.update(insertSql, new Object[]{tri.getId(), tri.getName()});
+		
+	}
+	                               //OR//
+	
+	//named Parameters
+	//manually inserting values by instantiating triangle class in maincalss
+	//NamedParameterJdbcTemplate accepts nameparametrs
+    public void insertTri(Triangle trian){
+    	String insertQuery = "insert into triangle(name,id) values(:name, :id)";
+    	SqlParameterSource namedparameters = new MapSqlParameterSource("id",trian.getId()).addValue("name", trian.getName()); 
+    	namedParameterjdbctTemplate.update(insertQuery, namedparameters);
+    	
+    	
+    	
+    }
 	
 	
 	
+	//creatin a new table
+	public void createRecTable(){
+		String table = "create table rectangle(age integer, name varchar(20))";
+		jdbctemplate.execute(table);
+	}
 	
 	
+	 
 	//jdbctemplate cannot map the values, so rowmapper is used
 	private static final class triangleMapper implements RowMapper<Triangle>{
 
@@ -134,11 +168,8 @@ public class DaoImpl {
 			t.setName(resultset.getString("NAME"));
 			return t;
 		}
-		
-		
-	}
-
-	
+		}
+   
 	
 	
 	
@@ -149,6 +180,7 @@ public class DaoImpl {
 	@Autowired
 	public void setDataSource(DataSource dataSource) {
 		this.jdbctemplate = new JdbcTemplate(dataSource) ;
+		this.namedParameterjdbctTemplate = new NamedParameterJdbcTemplate(dataSource);
 	}
 
 	public JdbcTemplate getJdbctemplate() {
